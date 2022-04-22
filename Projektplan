@@ -1,0 +1,30 @@
+Tanken kring spelet:
+Tank Gaame ska gå ut på att två personer styr varsin tank ska förstöra den andra tanken för
+att vinna. Tanken kan skjuta ut skott och om de skotten träffar någon av tankarna (ens egna
+skott kan träffa sig själv) så förstörs tanken och den spelarnen som har sin tank kvar sist 
+vinner. Båda tankarna kommer vara i en box med massvis med väggar som skotten kan studsa på. 
+
+
+
+Minimum krav:
+- Skapa två rektanglar i canvas med olika färger.
+- En av rektanglarna ska kunna styras av ASDW tangenterna. W förflyttas rektangeln från en av 
+kortsidorna (framåt), S förflyttas rektangeln från den motsatta kortsidan, A och D vrids
+rektangeln vänster respektive höger (med antagandet att på kortsidan som flyttas av W är framåt). 
+- Den andra rektangeln ska styras med pilarna. 
+- Gör att respektive rektanglar har en knapp som skapar en liten cirkel framför dem, cirkeln
+ska röras i konstant fart i riktningen som rektangelns framsida är på. 
+- När cirklarna träffar en rektangel kommer den rektangeln förstöras/försvinna
+- Gör en box (canvasen kan vara boxen?) som rektanglarna kommer vara i när spelet börjar,
+cirklarna ska kunna studsa på sidorna av boxen. 
+- Gör väggar i boxen, som cirklarna också kan studsa på. 
+
+
+Ytterligare tillägg som är bra:
+- Inför slumpfaktorer, t.ex att väggar är på olika ställen varje spel, boxen är olika stor, 
+rektanglarna startar på slumpmässiga ställen varje gång etc.
+- Gör att utseendet på rektangeln blir till en tank. 
+- Inför ett poängsystem, om man vinner en omgång får man ett poäng och den som först kommer 
+till t.ex 10 poäng vinner. 
+- Inför "Power upps", som gör att skotten blir annorlunda beroende på vilken power up som man
+tar up, en power upp kan vara att skotten går igenom väggar. 
