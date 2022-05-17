@@ -45,7 +45,7 @@ function tank(color, x, y, shot, id) {
     this.x = x;
     this.y = y;
     this.center = new Point(this.width / 2, this.height / 2);
-    this.points = [new Point(0, 0), new Point(this.width, 0), new Point(this.width, this.height), new Point(0, this.height)];
+    this.points = [new Point(0, 0), new Point(this.width, 0), new Point(this.width, this.height), new Point(0, this.height)]; //0=övre vänster 1=övre höger 2=nedre höger 3=nedre vänster
     this.vertices = this.points.map(point => point.rotate(this.angle, this.center).translate(this.x - (this.width / 2), this.y - (this.height / 2)));
     this.image = new Image();
     this.image.src = color;
@@ -147,12 +147,12 @@ function updateGameArea() {
     for (const tank of playerTanks) {
         tank.moveAngle = 0;
         tank.speed = 0;
-
+        //0=övre vänster 1=övre höger 2=nedre höger 3=nedre vänster
         const input = tank.id == 0 ? [37, 39, 38, 40, 77] : [65, 68, 87, 83, 81];
         if (myGameArea.keys != null) {
             if (myGameArea.keys[input[0]]) {tank.moveAngle = -2; }
             if (myGameArea.keys[input[1]]) {tank.moveAngle = 2; }
-            if (myGameArea.keys[input[2]]) {tank.speed= 1; }
+            if (myGameArea.keys[input[2]] && tank.points) {tank.speed= 1; }
             if (myGameArea.keys[input[3]]) { tank.speed = -1; }
             if (myGameArea.keys[input[4]] && tank.relode == 0) {
                 tank.activeBullet = new bullet(tank.angle, tank.x + 23* Math.sin(tank.angle), tank.y - 23* Math.cos(tank.angle));
