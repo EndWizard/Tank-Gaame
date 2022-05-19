@@ -2,6 +2,10 @@ var playerTanks = [];
 var player3 = false;
 
 function startGame() {
+    let huvudmeny = prompt("Välj hur många spelare, skriv in 2 för två spelare och 3 för tre");
+    if (huvudmeny == 3){
+    var player3 = true;
+    }
     playerTanks.push(new tank("redtank.png", 225, 225, "redshot.png", 0), new tank("greentank.png", 25, 225, "greenshot.png", 1));
     if (player3) {
         playerTanks.push(new tank("bluetank.png", 125, 125, "blueshot.png", 2))
