@@ -2,7 +2,7 @@ var playerTanks = [];
 var player3 = false;
 
 function startGame() {
-    let huvudmeny = prompt("Välj hur många spelare, skriv in 2 för två spelare och 3 för tre");
+    let huvudmeny = prompt("Om du vill köra med tre spelare skriv in 3, annars skriv in vad som helst");
     if (huvudmeny == 3){
     var player3 = true;
     }
