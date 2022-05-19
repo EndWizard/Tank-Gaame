@@ -1,7 +1,11 @@
 var playerTanks = [];
+var player3 = false;
 
 function startGame() {
-    playerTanks.push(new tank( "redtank.png", 225, 225, "redshot.png", 0), new tank("greentank.png", 25, 225, "greenshot.png", 1));
+    playerTanks.push(new tank("redtank.png", 225, 225, "redshot.png", 0), new tank("greentank.png", 25, 225, "greenshot.png", 1));
+    if (player3) {
+        playerTanks.push(new tank("bluetank.png", 125, 125, "blueshot.png", 2))
+    }
     myGameArea.start();
 }
 
@@ -75,6 +79,12 @@ function tank(color, x, y, shot, id) {
         for (const point of vertices) {
             if (!inside(point, gameArea.points)) return;
         }
+        for (id in playerTanks) {
+            const other = playerTanks[id];
+            if (other && other.id !== this.id) {
+                if (check_collision(vertices, other.vertices)) return;
+            }
+        }
         this.angle = angle;
         this.x = x;
         this.y = y;
@@ -83,6 +93,52 @@ function tank(color, x, y, shot, id) {
     }
 
 }
+
+function touch(line1, line2) {
+    let p1 = line1.p1;
+    let p2 = line1.p2;
+    let p3 = line2.p1;
+    let p4 = line2.p2;
+    let denomintor = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
+    let ua = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / denomintor;
+    let ub = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denomintor;
+
+    if (ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1) return true;
+
+    return false;
+}
+
+function check_collision(polygon1, polygon2) {
+    const lines1 = get_lines(polygon1);
+    const lines2 = get_lines(polygon2);
+
+    for (let i = 0; i < lines1.length; i++) {
+        for (let j = 0; j < lines2.length; j++) {
+            if (touch(lines1[i], lines2[j])) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function get_lines(vertices) {
+    let lines = [];
+
+    for (let i = 0; i < vertices.length; i++) {
+        lines.push(new Line(vertices[i], vertices[(i + 1) % vertices.length]));
+    }
+
+    return lines;
+}
+
+class Line {
+    constructor(p1, p2) {
+        this.p1 = p1;
+        this.p2 = p2;
+    }
+};
 
 function bullet(angle, x, y, type) {
 
@@ -155,7 +211,6 @@ function updateGameArea() {
     for (const tank of playerTanks) {
         tank.moveAngle = 0;
         tank.speed = 0;
-        //&& myGameArea.width<tank.points[0]>0 && myGameArea.width<tank.points[1]>0 && myGameArea.hight<tank.points[0]>0 && myGameArea.hight<tank.points[1]>0
         //0=övre vänster 1=övre höger 2=nedre höger 3=nedre vänster
         const input = tank.id == 0 ? [37, 39, 38, 40, 77] : [65, 68, 87, 83, 81];
         if (myGameArea.keys != null) {
