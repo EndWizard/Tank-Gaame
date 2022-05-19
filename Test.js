@@ -1,10 +1,18 @@
 var playerTanks = [];
 var player3 = false;
+var walls = [];
 
 function startGame() {
-    playerTanks.push(new tank("redtank.png", 225, 225, "redshot.png", 0), new tank("greentank.png", 25, 225, "greenshot.png", 1));
+    playerTanks.push(new tank("redtank.png", Math.round(Math.random() * 8)*68+32, Math.round(Math.random() * 5)*68+32, "redshot.png", 0), new tank("greentank.png", Math.round(Math.random() * 8)*68+32, Math.round(Math.random() * 5)*68+32,"greenshot.png", 1));
     if (player3) {
-        playerTanks.push(new tank("bluetank.png", 125, 125, "blueshot.png", 2))
+        playerTanks.push(new tank("bluetank.png", 125, 125, "blueshot.png", 2));
+    }
+    for (let x = 0; x < 9; x++) {
+        for (let y = 0; y < 6; y++) {
+            if (x<9 && Math.random()>0.7) walls.push(new wall(x*68+64,y*68-4,"a"));
+
+            if (y<6 && Math.random()>0.7) walls.push(new wall(x*68-4,y*68+64,"b"));
+        }
     }
     myGameArea.start();
 }
@@ -12,8 +20,8 @@ function startGame() {
 var myGameArea = {
     canvas : document.createElement("canvas"),
     start : function() {
-        this.canvas.width = 1000;
-        this.canvas.height = 500;
+        this.canvas.width = 603;
+        this.canvas.height = 398;
         this.points = [new Point(0, 0), new Point(this.canvas.width, 0), new Point(this.canvas.width, this.canvas.height), new Point(0, this.canvas.height)]; //0=övre vänster 1=övre höger 2=nedre höger 3=nedre vänster
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
@@ -42,8 +50,8 @@ function tank(color, x, y, shot, id) {
     this.activeBullet = null;
     this.alive = true;
     this.relode = 0;
-    this.width = 30;
-    this.height = 45;
+    this.width = 18;
+    this.height = 27;
     this.speed = 0;
     this.angle = 0;
     this.moveAngle = 0;
@@ -85,6 +93,13 @@ function tank(color, x, y, shot, id) {
                 if (check_collision(vertices, other.vertices)) return;
             }
         }
+        for (id in walls) {
+            const other = walls[id];
+
+                if (check_collision(vertices, other.points)) return;
+        
+        }
+        
         this.angle = angle;
         this.x = x;
         this.y = y;
@@ -143,8 +158,8 @@ class Line {
 function bullet(angle, x, y, type) {
 
     this.type = type;
-    this.width = 8;
-    this.height = 8;
+    this.width = 7;
+    this.height = 7;
     this.xspeed = 4;
     this.yspeed = 4;
     this.angle = angle;
@@ -171,6 +186,28 @@ function bullet(angle, x, y, type) {
         this.position = new Point(this.x, this.y);
     }
 }
+
+function wall(x, y, type) {
+    this.type = type;
+    if (type=="a") {        
+        this.width = 4;
+        this.height = 72;
+    }
+    if (type=="b") {        
+        this.width = 72;
+        this.height = 4;
+    }
+    this.x = x;
+    this.y = y;
+    this.points = [new Point(0, 0), new Point(this.width, 0), new Point(this.width, this.height), new Point(0, this.height)];
+    this.update = function () {
+        ctx = myGameArea.context;
+        ctx.fillStyle = "black";
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+}
+
+
 
 class Point {
     constructor(x, y) {
@@ -214,10 +251,10 @@ function updateGameArea() {
         //0=övre vänster 1=övre höger 2=nedre höger 3=nedre vänster
         const input = tank.id == 0 ? [37, 39, 38, 40, 77] : [65, 68, 87, 83, 81];
         if (myGameArea.keys != null) {
-            if (myGameArea.keys[input[0]] ) {tank.moveAngle = -2; }
-            if (myGameArea.keys[input[1]]) {tank.moveAngle = 2; }
-            if (myGameArea.keys[input[2]] ) {tank.speed= 2; }
-            if (myGameArea.keys[input[3]]) { tank.speed = -2; }
+            if (myGameArea.keys[input[0]] ) {tank.moveAngle = -4; }
+            if (myGameArea.keys[input[1]]) {tank.moveAngle = 4; }
+            if (myGameArea.keys[input[2]] ) {tank.speed= 1.2; }
+            if (myGameArea.keys[input[3]]) { tank.speed = -1.; }
             if (myGameArea.keys[input[4]] && tank.relode == 0) {
                 tank.activeBullet = new bullet(tank.angle, tank.x + 23* Math.sin(tank.angle), tank.y - 23* Math.cos(tank.angle));
                 tank.relode = 150;
@@ -246,4 +283,7 @@ function updateGameArea() {
             tank.update();
         }
     } 
+    for (const wall of walls) {
+        wall.update();
+    }
 }
