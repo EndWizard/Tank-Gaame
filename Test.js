@@ -1,17 +1,29 @@
 var playerTanks = [];
 var player3 = false;
 var walls = [];
-
+const color = ["red","green","blue"]
 function startGame() {
+    while (true) {
+        let huvudmeny = prompt("Välj hur många spelare, skriv in 2 för två spelare och 3 för tre");
+        if (huvudmeny == 3){
+            player3 = true;
+            break
+        }
+        if (huvudmeny == 2) {
+            break
+        }
+    }
+    walls = [];
     playerTanks.push(new tank("redtank.png", Math.round(Math.random() * 8)*68+32, Math.round(Math.random() * 5)*68+32, "redshot.png", 0), new tank("greentank.png", Math.round(Math.random() * 8)*68+32, Math.round(Math.random() * 5)*68+32,"greenshot.png", 1));
     if (player3) {
-        playerTanks.push(new tank("bluetank.png", 125, 125, "blueshot.png", 2));
+        playerTanks.push(new tank("bluetank.png", Math.round(Math.random() * 8)*68+32, Math.round(Math.random() * 5)*68+32, "blueshot.png", 2));
     }
     for (let x = 0; x < 9; x++) {
         for (let y = 0; y < 6; y++) {
-            if (x<9 && Math.random()>0.7) walls.push(new wall(x*68+64,y*68-4,"a"));
+            if (x<9 && Math.random()>0.7) walls.push(new wall(2+x*67, 67*(1.5+y)-4, 0));
 
-            if (y<6 && Math.random()>0.7) walls.push(new wall(x*68-4,y*68+64,"b"));
+            if (y<6 && Math.random()>0.7)     walls.push(new wall(67*(0.5+x),67*(y+1)-2,90));
+
         }
     }
     myGameArea.start();
@@ -20,21 +32,13 @@ function startGame() {
 var myGameArea = {
     canvas : document.createElement("canvas"),
     start : function() {
-        this.canvas.width = 603;
+        this.canvas.width = 599;
         this.canvas.height = 398;
         this.points = [new Point(0, 0), new Point(this.canvas.width, 0), new Point(this.canvas.width, this.canvas.height), new Point(0, this.canvas.height)]; //0=övre vänster 1=övre höger 2=nedre höger 3=nedre vänster
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20);
-        window.addEventListener('keydown', function (e) {
-            e.preventDefault();
-            myGameArea.keys = (myGameArea.keys || []);
-            myGameArea.keys[e.keyCode] = (e.type == "keydown");
-        })
-        window.addEventListener('keyup', function (e) {
-            myGameArea.keys[e.keyCode] = (e.type == "keydown");
-        })
     },
     stop : function() {
         clearInterval(this.interval);
@@ -43,6 +47,24 @@ var myGameArea = {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
+
+window.addEventListener('keydown', function (e) {
+    e.preventDefault();
+
+    if (playerTanks.length === 1) {
+        playerTanks = [];
+        this.keys = {};
+        startGame();
+
+        return;
+    }
+
+    myGameArea.keys = (myGameArea.keys || []);
+    myGameArea.keys[e.keyCode] = (e.type == "keydown");
+});
+window.addEventListener('keyup', function (e) {
+    myGameArea.keys[e.keyCode] = (e.type == "keydown");
+});
 
 
 function tank(color, x, y, shot, id) {
@@ -84,6 +106,9 @@ function tank(color, x, y, shot, id) {
         const x = this.x + this.speed * Math.sin(angle);
         const y = this.y - this.speed * Math.cos(angle);
         const vertices = this.points.map(point => point.rotate(angle, this.center).translate(x - (this.width / 2), y - (this.height / 2)));
+        for (const wall of walls) {
+            if (check_collision(vertices, wall.vertices)) return;
+        }
         for (const point of vertices) {
             if (!inside(point, gameArea.points)) return;
         }
@@ -92,12 +117,6 @@ function tank(color, x, y, shot, id) {
             if (other && other.id !== this.id) {
                 if (check_collision(vertices, other.vertices)) return;
             }
-        }
-        for (id in walls) {
-            const other = walls[id];
-
-                if (check_collision(vertices, other.points)) return;
-        
         }
         
         this.angle = angle;
@@ -158,8 +177,8 @@ class Line {
 function bullet(angle, x, y, type) {
 
     this.type = type;
-    this.width = 7;
-    this.height = 7;
+    this.width = 6;
+    this.height = 6;
     this.xspeed = 4;
     this.yspeed = 4;
     this.angle = angle;
@@ -179,31 +198,35 @@ function bullet(angle, x, y, type) {
         ctx.restore();
     }
     this.newPos = function() {
-        this.angle += this.moveAngle * Math.PI / 180;
         this.x += this.xspeed * Math.sin(this.angle);
         this.y -= this.yspeed * Math.cos(this.angle);
 
         this.position = new Point(this.x, this.y);
     }
+
 }
 
-function wall(x, y, type) {
-    this.type = type;
-    if (type=="a") {        
-        this.width = 4;
-        this.height = 72;
-    }
-    if (type=="b") {        
-        this.width = 72;
-        this.height = 4;
-    }
+function wall(x, y, rotation) {
+    this.length = 67;
+    this.width = 4;
+    this.center = new Point(this.length / 2, this.width / 2);
     this.x = x;
     this.y = y;
-    this.points = [new Point(0, 0), new Point(this.width, 0), new Point(this.width, this.height), new Point(0, this.height)];
+    this.rotation = rotation * Math.PI / 180;
+    this.points = [new Point(0, 0), new Point(this.length, 0), new Point(this.length, this.width), new Point(0, this.width)];
+    this.vertices = this.points.map(point => point.rotate(this.rotation, this.center).translate(this.x - (this.width / 2), this.y - (this.length / 2)));
     this.update = function () {
         ctx = myGameArea.context;
         ctx.fillStyle = "black";
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.beginPath();
+        ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
+
+        for (let i = 1; i < this.vertices.length; i++) {
+            ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
+        }
+
+        ctx.closePath();
+        ctx.fill();
     }
 }
 
@@ -246,42 +269,65 @@ function updateGameArea() {
     myGameArea.clear();
 
     for (const tank of playerTanks) {
+        if (!tank.alive) continue;
+
         tank.moveAngle = 0;
         tank.speed = 0;
         //0=övre vänster 1=övre höger 2=nedre höger 3=nedre vänster
-        const input = tank.id == 0 ? [37, 39, 38, 40, 77] : [65, 68, 87, 83, 81];
+        const input = tank.id == 0 ? [37, 39, 38, 40, 77] : tank.id == 1 ? [83, 70, 69, 68, 87] : [74, 76, 73, 75, 85];
         if (myGameArea.keys != null) {
             if (myGameArea.keys[input[0]] ) {tank.moveAngle = -4; }
             if (myGameArea.keys[input[1]]) {tank.moveAngle = 4; }
             if (myGameArea.keys[input[2]] ) {tank.speed= 1.2; }
             if (myGameArea.keys[input[3]]) { tank.speed = -1.; }
             if (myGameArea.keys[input[4]] && tank.relode == 0) {
-                tank.activeBullet = new bullet(tank.angle, tank.x + 23* Math.sin(tank.angle), tank.y - 23* Math.cos(tank.angle));
-                tank.relode = 150;
+                tank.activeBullet = new bullet(tank.angle, tank.x + 27/2* Math.sin(tank.angle), tank.y - 27/2* Math.cos(tank.angle));
+                tank.relode = 250;
             }
         }
 
         if (tank.relode > 0) {
             tank.relode = tank.relode - 1;
-            if (tank.activeBullet.x-4 < 0 || tank.activeBullet.x+4 > myGameArea.canvas.width) {
+            if (tank.activeBullet.x-3 < 0 || tank.activeBullet.x+3 > myGameArea.canvas.width) {
                 tank.activeBullet.xspeed = -tank.activeBullet.xspeed;
             }
-            if (tank.activeBullet.y-4 < 0 || tank.activeBullet.y+4 > myGameArea.canvas.height) {
+            if (tank.activeBullet.y-3 < 0 || tank.activeBullet.y+3 > myGameArea.canvas.height) {
                 tank.activeBullet.yspeed = -tank.activeBullet.yspeed;
             }
+
+            for (const wall of walls) {
+                if (inside(tank.activeBullet.position, wall.vertices)) {
+                    if (wall.rotation == Math.PI/2) tank.activeBullet.xspeed = -tank.activeBullet.xspeed;
+                    if (wall.rotation == 0) tank.activeBullet.yspeed = -tank.activeBullet.yspeed;
+                }
+            }
+
             tank.activeBullet.newPos();
             tank.activeBullet.update();
             for (const other of playerTanks) {
                 if (inside(tank.activeBullet.position, other.vertices)) {
-                    myGameArea.stop();
+                    other.alive = false;
+                    playerTanks = playerTanks.filter(tank => tank.alive);
+                    if (playerTanks.length === 1) {
+                        myGameArea.clear();
+
+                        const ctx = myGameArea.context;
+                        ctx.fillStyle = color[playerTanks[0].id];
+                        ctx.font = '30px roboto';
+                        ctx.textAlign = "center";
+                        ctx.fillText(`The winner is ${color[playerTanks[0].id]}!`, ctx.canvas.width / 2, ctx.canvas.height / 2);
+                        ctx.fillText("Press any key to play again!", ctx.canvas.width / 2, ctx.canvas.height / 2 + 30);
+
+                        myGameArea.stop();
+                        return
+                    }
                 }
             }
         }
 
-        if (tank.alive == true) {
+
             tank.newPos(myGameArea);
             tank.update();
-        }
     } 
     for (const wall of walls) {
         wall.update();
