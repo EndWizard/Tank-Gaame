@@ -1,7 +1,8 @@
 var playerTanks = [];
 var player3 = false;
 var walls = [];
-const color = ["red","green","blue"]
+const color = ["red", "green", "blue"]
+
 function startGame() {
     while (true) {
         let huvudmeny = prompt("Välj hur många spelare, skriv in 2 för två spelare och 3 för tre");
