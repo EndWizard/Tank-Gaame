@@ -11,6 +11,7 @@ function startGame() {
             break
         }
         if (huvudmeny == 2) {
+            player3 = false;
             break
         }
     }
@@ -183,7 +184,6 @@ function bullet(angle, x, y, type) {
     this.xspeed = 4;
     this.yspeed = 4;
     this.angle = angle;
-    this.moveAngle = 0;
     this.image = new Image();
     this.image.src = "ball.png";
     this.x = x;
